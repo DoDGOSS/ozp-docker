@@ -1,0 +1,4 @@
+API_URL=http://localhost:8001
+CENTER_URL=http://localhost:8000/dist
+HUD_URL=http://localhost:8004/dist
+WEBTOP_URL=http://localhost:9000/

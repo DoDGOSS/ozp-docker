@@ -1,0 +1,28 @@
+{
+  "name": "ozp-demo",
+  "description": "A collection of ozp-demo apps",
+  "license": "MIT",
+  "private": true,
+  "dependencies": {
+    "angular": "1.2.x",
+    "angular-route": "1.2.x",
+    "angular-ui-router": "~0.2.14",
+    "angular-loader": "1.2.x",
+    "angular-mocks": "~1.2.x",
+    "angular-bootstrap": "~0.13.x",
+    "angular-gridster": "~0.9.11",
+    "angular-animate": "1.2.x",
+    "bootstrap": "~3.3.x",
+    "d3": "latest",
+    "html5-boilerplate": "~4.3.0",
+    "ozp-iwc": "../lib/ozp-iwc",
+    "ozp-data-schemas": "../lib/ozp-data-schemas",
+    "ol3": "hastebrot/ol3-dist#3.1.1"
+  },
+  "resolutions": {
+    "angular": ">=1.3.0"
+  },
+  "devDependencies": {
+    "remarkable-bootstrap-notify": "~3.1.3"
+  }
+}

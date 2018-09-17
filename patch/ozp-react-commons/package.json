@@ -1,0 +1,47 @@
+{
+  "name": "ozp-react-commons",
+  "version": "1.1.56",
+  "description": "React.js and Reflux.js components which are shared by the center-ui and hud-ui projects.",
+  "scripts": {
+    "test": "./node_modules/karma/bin/karma start"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ozone-development/ozp-react-commons.git"
+  },
+  "author": "",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://www.owfgoss.org/jira/browse/OZF"
+  },
+  "homepage": "https://github.com/ozone-development/ozp-react-commons",
+  "dependencies": {
+    "bootstrap-sass": "file:///app/lib/ozp-bootstrap-sass",
+    "es5-shim": "^4.0.6",
+    "humps": "2.0.1",
+    "jquery": "~3.2.0",
+    "lodash-amd": "2.4.1",
+    "marked": "^0.3.5",
+    "object-assign": "1.0.0",
+    "react": "^0.12.2",
+    "react-router": "0.12.4",
+    "reflux": "^0.1.15",
+    "webpack": "1.12.11",
+    "webpack-dev-server": "1.14.1"
+  },
+  "devDependencies": {
+    "chai": "1.10.0",
+    "fs": "0.0.2",
+    "inject-loader": "1.0.0",
+    "jasmine-core": "^2.3.4",
+    "jsx-loader": "0.12.2",
+    "karma": "0.12.31",
+    "karma-jasmine": "^0.3.6",
+    "karma-mocha": "0.1.10",
+    "karma-mocha-reporter": "^1.0.2",
+    "karma-phantomjs-launcher": "0.1.4",
+    "karma-webpack": "1.3.1",
+    "mocha": "^1.20.1",
+    "sinon": "1.7.0"
+  }
+}

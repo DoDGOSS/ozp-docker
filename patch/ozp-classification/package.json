@@ -1,0 +1,22 @@
+{
+  "name": "ozp-classification",
+  "version": "1.0.0",
+  "description": "A set of utilities handling injection of security banners into an HTML page.",
+  "main": "jquery.classification.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ozoneplatform/ozp-classification"
+  },
+  "author": "emosher",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/ozoneplatform/ozp-classification/issues"
+  },
+  "homepage": "https://github.com/ozoneplatform/ozp-classification",
+  "dependencies": {
+    "jquery": "2.1.1"
+  }
+}
