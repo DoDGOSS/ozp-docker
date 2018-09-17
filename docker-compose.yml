@@ -1,0 +1,125 @@
+version: '3'
+
+services:
+
+  ozp_api:
+    image: ozp/api
+    build:
+      context: ./ozp_api
+    volumes:
+      - ./ozp_api/ozp-backend:/app
+    depends_on:
+      - postgresql
+      - elasticsearch
+      - ozp_auth
+    command: make use_psql dev use_es reindex_es run
+    links:
+     - ozp_auth:auth_server
+     - elasticsearch:elasticsearch
+     - postgresql:ozp_db
+     - ozp_cas:ozp_cas
+    ports:
+     - 8001:8001
+    environment:
+      DEMO_APPS_URL:       "http://localhost:8002"
+      USER_INFO_URL:       "http://auth_server/demo-auth/users/%s/info.json?issuerDN=%s"
+      USER_GROUPS_URL:     "http://auth_server/demo-auth/users/%s/groups/%s/"
+      ES_ENABLED:          "true"
+      ES_HOST:             "elasticsearch"
+      ES_PORT:             9200
+      ES_BASIC_AUTH:       "true"
+      ES_AUTH_USERNAME:    "user"
+      ES_AUTH_PASSWORD:    "password"
+      OZP_DB_HOST:         "ozp_db"
+      OZP_DB_PORT:         5432
+      OZP_DB_USERNAME:     "ozp_user"
+      OZP_DB_PASSWORD:     "password"
+
+      # IMPORTANT: Make sure to add an entry for `ozp_cas` to the host system's `hosts` file.
+      # For example, add `127.0.0.1 ozp_cas` to /etc/hosts or C:\Windows\System32\drivers\etc\hosts
+      CAS_ENABLED:         "true"
+      CAS_SERVER_URL:      "http://ozp_cas/cas/"
+
+  ozp_cas:
+    image: ozp/cas_mock
+    build:
+      context: ./ozp_cas_mock
+    restart: always
+    ports:
+     - 80:80
+
+  postgresql:
+    image: ozp/postgres
+    build:
+      context: ./ozp_postgresql
+    restart: always
+
+  ozp_auth:
+    image: ozp/auth
+    build:
+      context: ./ozp_auth
+    ports:
+     - 8003:80
+
+  ozp_center:
+    image: ozp/center
+    build:
+      context: ./ozp_center
+    volumes:
+      - ./ozp_center/ozp-center:/app/ozp-center
+      - ozp_center_node_modules:/app/ozp-center/node_modules
+      - ./ozp_center/lib:/app/lib
+    ports:
+     - 8000:8000
+    environment:
+      API_URL:    "http://localhost:8001"
+      CENTER_URL: "http://localhost:8000/dist"
+      HUD_URL:    "http://localhost:8004/dist"
+      WEBTOP_URL: "http://localhost:9000/"
+      HELP_URL:   "http://localhost:8888/#/"
+      LOGOUT_URL: "http://localhost:8001/logout/"
+
+  ozp_demo:
+    image: ozp/demo
+    build:
+      context: ./ozp_demo
+    ports:
+     - 8002:8000
+
+  ozp_hud:
+    image: ozp/hud
+    build:
+      context: ./ozp_hud
+    ports:
+     - 8004:8088
+    environment:
+      API_URL:    "http://localhost:8001"
+      CENTER_URL: "http://localhost:8000/dist"
+      HUD_URL:    "http://localhost:8004/dist"
+      WEBTOP_URL: "http://localhost:9000/"
+
+  ozp_webtop:
+    image: ozp/webtop
+    build:
+      context: ./ozp_webtop
+    ports:
+     - 9000:9000
+     - 9001:9001
+     - 9010:9010
+     - 9100:9100
+     - 9600:9600
+     - 9601:9601
+     - 35729:35729
+
+  ozp_help:
+    image: ozp/help
+    build:
+      context: ./ozp_help
+    ports:
+      - 8888:8888
+
+  elasticsearch:
+    image: elasticsearch:2.4.6
+
+volumes:
+  ozp_center_node_modules:
