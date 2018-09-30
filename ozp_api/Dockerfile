@@ -9,7 +9,7 @@ WORKDIR /app
 
 COPY ozp-backend/requirements.txt ozp-backend/requirements.dev.txt ozp-backend/requirements.prod.txt ./
 
-RUN pip install --no-cache-dir -r requirements.txt && \
+RUN pip install --upgrade pip && pip install --no-cache-dir -r requirements.txt && \
     mkdir -p .git/hooks
 
 

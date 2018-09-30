@@ -135,7 +135,7 @@ LOGGING = {
         'file': {
             'level': 'DEBUG',
             'class': 'logging.FileHandler',
-            'filename': 'ozp.log',
+            'filename': '/var/log/ozp.log',
             'formatter': 'json',
         }
     },
@@ -180,21 +180,50 @@ LOGGING = {
 # CELERY_EAGER_PROPAGATES_EXCEPTIONS = True
 # CELERY_BROKER_BACKEND = 'memory'
 
-CELERY_BROKER_URL = 'redis://localhost:6379/11'
+# CELERY_BROKER_URL = 'redis://localhost:6379/11'
 # CELERY_BROKER_URL = 'amqp://guest:password@localhost:5672/'
-CELERY_RESULT_BACKEND = 'redis://localhost:6379/12'
+# CELERY_RESULT_BACKEND = 'redis://localhost:6379/12'
 # CELERY_RESULT_BACKEND = 'rpc://'
 # CELERY_RESULT_BACKEND= 'elasticsearch://example.com:9200/index_name/doc_type'  # encoding issue
 
 # http://docs.celeryproject.org/en/latest/userguide/calling.html#calling-serializers
-CELERY_TASK_SERIALIZER = 'json'  # 'msgpack'
-CELERY_RESULT_SERIALIZER = 'json'  # 'msgpack'
-CELERY_ACCEPT_CONTENT = ['json', 'msgpack']
+# CELERY_TASK_SERIALIZER = 'json'  # 'msgpack'
+# CELERY_RESULT_SERIALIZER = 'json'  # 'msgpack'
+# CELERY_ACCEPT_CONTENT = ['json', 'msgpack']
 # CELERY_timezone = 'Europe/Oslo'
 # CELERY_enable_utc = True
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.8/topics/i18n/
+
+# CELERY REDIS CONFIGURATION
+# docker-compose exec ozp_api celery -A ozp.celery worker -B -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+CELERY_ENABLED = str_to_bool(os.getenv('CELERY_ENABLED', "true"))
+
+if CELERY_ENABLED:
+
+    from celery.schedules import crontab
+
+    INSTALLED_APPS += (
+        'django_celery_beat',
+    )
+
+    CELERY_BROKER_URL = os.getenv('REDIS_HOST', 'redis://localhost:6379')
+    CELERY_enable_utc = True
+    CELERY_RESULT_BACKEND = CELERY_BROKER_URL
+    CELERY_ACCEPT_CONTENT = ['application/json']
+    CELERY_TASK_SERIALIZER = 'json'
+    CELERY_RESULT_SERIALIZER = 'json'
+
+    # Collect and update scheduled import tasks every minute 
+    CELERY_BEAT_SCHEDULE = {
+        'Collect and Schedule Import Tasks': {
+            'task': 'ozpcenter.tasks.collect_and_schedule_import_tasks',
+            'schedule': crontab()
+        }
+    }
+
+
 
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
@@ -267,6 +296,8 @@ if CAS_ENABLED:
     CAS_VERSION = "2"
     CAS_USERNAME_ATTRIBUTE = "uid"
 
+
+HEALTH_CHECK_ENABLED = str_to_bool(os.getenv('HEALTH_CHECK_ENABLED', "false"))
 
 # NOTE: In production or when developing with redis server, comment REDIS_CLIENT_CLASS line
 CACHES = {

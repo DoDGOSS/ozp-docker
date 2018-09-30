@@ -1,9 +1,7 @@
 FROM node:6.12.3
 
 # Pre-install
-
 RUN npm install --quiet --progress=false -g bower@1.3.12 > /dev/null
-
 
 # Dependencies
 
@@ -30,6 +28,8 @@ COPY ozp-demo-apps .
 
 RUN mv ./app ./demo_apps
 
+# http-server with XSS header added
+RUN mv http-server node_modules/http-server/bin/http-server
 
 # Configuration
 

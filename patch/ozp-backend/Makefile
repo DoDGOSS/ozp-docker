@@ -45,13 +45,14 @@ test_soft: pre  ## Run all tests (without clean)
 # 	cp .hooks/pre-commit .git/hooks/
 
 run:  ## Run the server locally
-	$(use_database) $(use_elasticsearch_str) $(use_runserver_str)
+	$(use_database) $(use_elasticsearch_str) $(use_runserver_str) 
 
 # my-app &
 # echo $my-app-pid
 run_all: ## Run server locally, celery_worker, Recommendations
 	(make run &) && (echo $$! > SERVER_PYTHON.pid)
 	(redis-server &) && (echo $$! > SERVER_REDIS.pid)
+	# (make run &) && (make celery_worker &)
 
 kill_all:
 	# kill `cat SERVER_PYTHON.pid`
@@ -62,7 +63,8 @@ kill_all:
 celery_worker:  ## Run the celery worker
 	# env/lib/python3.4/site-packages/watchdog/observers/__init__.py
 	# Change if platform.is_linux(): try: from .polling import PollingObserver as Observer
-	watchmedo auto-restart --directory . --patterns='*.py' --recursive --interval=5 -- celery worker -l info -A ozp
+	# watchmedo auto-restart --directory . --patterns='*.py' --recursive --interval=5 -- celery worker -B -l info -A ozp &
+	celery -A ozp.celery worker -B -l info
 
 kill_celery_worker:
 	ps aux | grep "celery worker" | grep "Ss" | awk '{print $$2}' | xargs -I {} echo "{}" | xargs kill
@@ -102,7 +104,6 @@ db_migrate:  ## Db migrate
 	$(use_database) python manage.py makemigrations ozpiwc
 	$(use_database) TEST_MODE=True python manage.py migrate
 
-# install_git_hooks
 dev: clean pre create_static db_migrate  ## Set up development server with sample data
 	if [[ $(use_database) = *"psql"* ]] ; then $(use_database) python manage.py flush --noinput; echo 'Flushed psql'  ; fi
 	$(use_database) $(use_runscript_str) sample_data_generator

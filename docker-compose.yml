@@ -6,18 +6,20 @@ services:
     image: ozp/api
     build:
       context: ./ozp_api
+    container_name: ozp_api
     volumes:
       - ./ozp_api/ozp-backend:/app
     depends_on:
-      - postgresql
+      - ozp_postgresql
       - elasticsearch
       - ozp_auth
     command: make use_psql dev use_es reindex_es run
     links:
      - ozp_auth:auth_server
      - elasticsearch:elasticsearch
-     - postgresql:ozp_db
+     - ozp_postgresql:ozp_db
      - ozp_cas:ozp_cas
+     - ozp_redis:ozp_redis
     ports:
      - 8001:8001
     environment:
@@ -30,6 +32,7 @@ services:
       ES_BASIC_AUTH:       "true"
       ES_AUTH_USERNAME:    "user"
       ES_AUTH_PASSWORD:    "password"
+      MAIN_DATABASE:       "psql"
       OZP_DB_HOST:         "ozp_db"
       OZP_DB_PORT:         5432
       OZP_DB_USERNAME:     "ozp_user"
@@ -37,27 +40,60 @@ services:
 
       # IMPORTANT: Make sure to add an entry for `ozp_cas` to the host system's `hosts` file.
       # For example, add `127.0.0.1 ozp_cas` to /etc/hosts or C:\Windows\System32\drivers\etc\hosts
-      CAS_ENABLED:         "true"
+      CAS_ENABLED:         "false"
       CAS_SERVER_URL:      "http://ozp_cas/cas/"
+      CELERY_ENABLED:      "true"
+      REDIS_HOST:          "redis://ozp_redis:6379"
+
+      # external_links:
+      #   - ozp_api_2
 
   ozp_cas:
     image: ozp/cas_mock
     build:
       context: ./ozp_cas_mock
+    container_name: ozp_cas_mock
     restart: always
     ports:
      - 80:80
 
-  postgresql:
+  ozp_postgresql:
     image: ozp/postgres
     build:
       context: ./ozp_postgresql
+    container_name: ozp_postgresql
     restart: always
 
+  ozp_redis:
+    image: redis:4.0-alpine
+    container_name: ozp_redis
+    volumes:
+      - redis_data:/data
+
+  # Command required to run import_task scheduler 
+  # Run in command line: docker-compose exec ozp_api celery -A ozp.celery worker -B -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+  # Running command works, however, should run as a daemon in production 
+  
+  # ozp_celery:
+  #   image: ozp/api
+  #   command: celery -A ozp.celery worker -B -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+  #   container_name: ozp_celery
+  #   volumes:
+  #    - ./ozp_api/ozp-backend:/app
+  #   links:
+  #     - ozp_redis:ozp_redis
+  #   depends_on:
+  #     - ozp_api
+  #     - ozp_postgresql
+  #     - ozp_redis
+  #   environment:
+  #     REDIS_HOST:          "redis://ozp_redis:6379"
+      
   ozp_auth:
     image: ozp/auth
     build:
       context: ./ozp_auth
+    container_name: ozp_auth
     ports:
      - 8003:80
 
@@ -65,6 +101,7 @@ services:
     image: ozp/center
     build:
       context: ./ozp_center
+    container_name: ozp_center
     volumes:
       - ./ozp_center/ozp-center:/app/ozp-center
       - ozp_center_node_modules:/app/ozp-center/node_modules
@@ -83,6 +120,7 @@ services:
     image: ozp/demo
     build:
       context: ./ozp_demo
+    container_name: ozp_demo
     ports:
      - 8002:8000
 
@@ -90,6 +128,7 @@ services:
     image: ozp/hud
     build:
       context: ./ozp_hud
+    container_name: ozp_hud
     ports:
      - 8004:8088
     environment:
@@ -102,6 +141,7 @@ services:
     image: ozp/webtop
     build:
       context: ./ozp_webtop
+    container_name: ozp_webtop
     ports:
      - 9000:9000
      - 9001:9001
@@ -115,11 +155,14 @@ services:
     image: ozp/help
     build:
       context: ./ozp_help
+    container_name: ozp_help
     ports:
       - 8888:8888
 
   elasticsearch:
     image: elasticsearch:2.4.6
+    container_name: elasticsearch
 
 volumes:
   ozp_center_node_modules:
+  redis_data: 

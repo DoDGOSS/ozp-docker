@@ -442,7 +442,14 @@ module.exports = function(grunt) {
         port: 9000,
         // Change this to '0.0.0.0' to access the server from outside.
         hostname: '0.0.0.0',
-        livereload: 35729
+        livereload: 35729,
+        middleware: function(connect, options, middlewares) {
+          middlewares.unshift(function(req, res, next) {
+              res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+              next();
+          });
+          return middlewares;
+        }
       },
       livereload: {
         options: {
@@ -474,7 +481,14 @@ module.exports = function(grunt) {
       docs: {
         options: {
           port: 9010,
-          base: '<%= docs_dir %>'
+          base: '<%= docs_dir %>',
+          middleware: function(connect, options, middlewares) {
+            middlewares.unshift(function(req, res, next) {
+                res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+                next();
+            });
+            return middlewares;
+          }
         }
       },
       // Coverage report server

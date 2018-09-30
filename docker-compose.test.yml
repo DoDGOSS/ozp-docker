@@ -1,0 +1,98 @@
+version: '3'
+
+services:
+
+  ozp_api_1:
+    image: ozp/api_1
+    build:
+      context: ./ozp_api
+    container_name: ozp_api_1
+    volumes:
+      - ./ozp_api/ozp-backend:/app
+    depends_on:
+      - ozp_postgresql_1
+      - ozp_auth
+      - ozp_api_2
+    command: bash ./start_import_tests.sh
+    links:
+     - ozp_auth:auth_server
+     - ozp_postgresql_1:ozp_db
+     - ozp_api_2:remote
+    ports:
+     - 8001:8001
+    environment:
+      DEMO_APPS_URL:         "http://localhost:8002"
+      USER_INFO_URL:         "http://auth_server/demo-auth/users/%s/info.json?issuerDN=%s"
+      USER_GROUPS_URL:       "http://auth_server/demo-auth/users/%s/groups/%s/"
+      ES_ENABLED:            "false"
+      OZP_DB_HOST:           "ozp_db"
+      OZP_DB_PORT:           5432
+      OZP_DB_USERNAME:       "ozp_user"
+      OZP_DB_PASSWORD:       "password"
+      HEALTH_CHECK_ENABLED:  "true"
+      CAS_ENABLED:           "false"
+
+  ozp_api_2:
+    image: ozp/api_2
+    build:
+      context: ./ozp_api
+    container_name: ozp_api_2
+    volumes:
+      - ./ozp_api/ozp-backend:/app
+    depends_on:
+      - ozp_postgresql_2
+      - ozp_auth
+    command: bash ./start_affiliated_store.sh
+    links:
+      - ozp_auth:auth_server
+      - ozp_postgresql_2:ozp_db
+    ports:
+    - 8002:8001
+    environment:
+      DEMO_APPS_URL:         "http://localhost:8002"
+      USER_INFO_URL:         "http://auth_server/demo-auth/users/%s/info.json?issuerDN=%s"
+      USER_GROUPS_URL:       "http://auth_server/demo-auth/users/%s/groups/%s/"
+      ES_ENABLED:            "false"
+      OZP_DB_HOST:           "ozp_db"
+      OZP_DB_PORT:           5432
+      OZP_DB_USERNAME:       "ozp_user"
+      OZP_DB_PASSWORD:       "password"
+      HEALTH_CHECK_ENABLED:  "true"
+      CAS_ENABLED:           "false"
+
+    networks:
+      - ozpdocker_default
+
+  ozp_postgresql_1:
+    image: ozp/postgres_1
+    build:
+      context: ./ozp_postgresql
+    container_name: ozp_postgresql_1
+    restart: always
+    ports:
+     - 5432:5432
+
+  ozp_postgresql_2:
+    image: ozp/postgres_2
+    build:
+      context: ./ozp_postgresql
+    container_name: ozp_postgresql_2
+    restart: always
+    ports:
+    - 5433:5432
+
+  ozp_auth:
+    image: ozp/auth
+    build:
+      context: ./ozp_auth
+    container_name: ozp_auth
+    ports:
+    - 8003:80
+
+
+volumes:
+  ozp_center_node_modules:
+
+networks:
+  ozpdocker_default:
+    external: true
